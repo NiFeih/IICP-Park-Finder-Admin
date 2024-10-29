@@ -1,4 +1,4 @@
-# adminParking
+# IICP Park Finder Admin
 
 
 ## Project Setup
