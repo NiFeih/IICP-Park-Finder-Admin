@@ -1,13 +1,16 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { computed } from 'vue';
-import{getAuth} from 'firebase/auth'
+import { computed } from 'vue'
+import { getAuth } from 'firebase/auth'
 
 const auth = getAuth()
 const router = useRouter()
 function logout() {
-  auth.signOut()
-  router.push({ name: 'login' })
+  // Show confirmation dialog
+  if (confirm('Are you sure you want to log out?')) {
+    auth.signOut()
+    router.push({ name: 'login' })
+  }
 }
 
 const isAuthenticated = computed(() => {
@@ -16,8 +19,8 @@ const isAuthenticated = computed(() => {
 </script>
 
 <template>
-  <div class=" bg-slate-200 min-h-screen">
-    <header class="navbar bg-base-100">
+  <div class="bg-slate-200 min-h-screen">
+    <header class="navbar bg-base-100 fixed top-0 w-full z-10">
       <div class="navbar-start">
         <div class="dropdown">
           <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
@@ -40,22 +43,29 @@ const isAuthenticated = computed(() => {
             tabindex="0"
             class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
           >
-          <li><RouterLink to="/">Home</RouterLink></li>
-          <li><RouterLink to="/searchCarPlate">Car Plates</RouterLink></li>
+            <li><RouterLink to="/home">Home</RouterLink></li>
+            <li><RouterLink to="/searchCarPlate">Car Plates</RouterLink></li>
+            <li><RouterLink to="/logging">Log Details</RouterLink></li>
           </ul>
         </div>
-        <RouterLink to="/" class="btn btn-ghost text-xl">iParking Admin</RouterLink>
+        <RouterLink to="/home" class="btn btn-ghost text-xl"
+          >IICP Park Finder</RouterLink
+        >
       </div>
       <div class="navbar-center hidden lg:flex">
         <ul class="menu menu-horizontal px-1">
-          <li><RouterLink to="/">Home</RouterLink></li>
+          <li><RouterLink to="/home">Home</RouterLink></li>
           <li><RouterLink to="/searchCarPlate">Car Plates</RouterLink></li>
-       
+          <li><RouterLink to="/logging">Log Details</RouterLink></li>
         </ul>
       </div>
       <div class="navbar-end flex">
         <div class="dropdown dropdown-end">
-          <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+          <div
+            tabindex="0"
+            role="button"
+            class="btn btn-ghost btn-circle avatar"
+          >
             <div class="w-10 rounded-full">
               <img
                 alt="User Avatar"
@@ -66,19 +76,14 @@ const isAuthenticated = computed(() => {
           <ul
             tabindex="0"
             class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-            
           >
-            <li>
-              <RouterLink to="/profile" class="justify-between"> Profile </RouterLink>
-            </li>
-        
             <li><button @click="logout">Logout</button></li>
           </ul>
-          
         </div>
       </div>
     </header>
-    <main >
+    <main class="pt-[64px]">
+      <!-- Adjust the padding-top here to avoid overlapping content -->
       <RouterView />
     </main>
   </div>
@@ -86,7 +91,8 @@ const isAuthenticated = computed(() => {
 
 <style scoped>
 /* Add your styles here */
-html, body {
+html,
+body {
   height: 100%;
 }
 

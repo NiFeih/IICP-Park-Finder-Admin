@@ -63,9 +63,44 @@ async function fetchFines() {
     })
 }
 
-function openPayModal(fine) {
-  selectedFine.value = fine
-  openPaymentModal.value = true
+async function openPayModal(fine) {
+  try {
+    // Get the user ID associated with the car plate number from CarPlateNumbers
+    const carPlateQuery = query(
+      collection(db, 'CarPlateNumbers'),
+      where('plateNumber', '==', fine.plateNumber),
+    )
+    const carPlateSnapshot = await getDocs(carPlateQuery)
+
+    if (!carPlateSnapshot.empty) {
+      const userId = carPlateSnapshot.docs[0].data().userId
+
+      // Get the student ID from the Users collection
+      const userQuery = query(
+        collection(db, 'Users'),
+        where('uid', '==', userId),
+      )
+      const userSnapshot = await getDocs(userQuery)
+
+      if (!userSnapshot.empty) {
+        const studentID = userSnapshot.docs[0].data().studentID
+
+        // Set up the fine details with the fetched student ID
+        selectedFine.value = {
+          ...fine, // Include other properties from the original fine object
+          studentID: studentID, // Attach the retrieved student ID here
+        }
+
+        openPaymentModal.value = true
+      } else {
+        console.error('User not found for given userId')
+      }
+    } else {
+      console.error('Car plate number not found')
+    }
+  } catch (error) {
+    console.error('Error fetching studentID:', error)
+  }
 }
 
 function openEditModal(fine) {
@@ -73,12 +108,46 @@ function openEditModal(fine) {
   openEditFineModal.value = true
 }
 
-// Function to open delete modal
-function openDeleteModal(fine) {
-  fineToDelete.value = fine // Set the fine to be deleted
-  openDeleteFineModal.value = true // Open the delete modal
-}
+async function openDeleteModal(fine) {
+  try {
+    // Get the user ID associated with the car plate number from CarPlateNumbers
+    const carPlateQuery = query(
+      collection(db, 'CarPlateNumbers'),
+      where('plateNumber', '==', fine.plateNumber),
+    )
+    const carPlateSnapshot = await getDocs(carPlateQuery)
 
+    if (!carPlateSnapshot.empty) {
+      const userId = carPlateSnapshot.docs[0].data().userId
+
+      // Get the student ID from the Users collection
+      const userQuery = query(
+        collection(db, 'Users'),
+        where('uid', '==', userId),
+      )
+      const userSnapshot = await getDocs(userQuery)
+
+      if (!userSnapshot.empty) {
+        const studentID = userSnapshot.docs[0].data().studentID
+
+        // Set up the fine details with the fetched student ID
+        fineToDelete.value = {
+          id: fine.id,
+          plateNumber: fine.plateNumber,
+          studentId: studentID, // Attach the retrieved student ID here
+        }
+
+        openDeleteFineModal.value = true
+      } else {
+        console.error('User not found for given userId')
+      }
+    } else {
+      console.error('Car plate number not found')
+    }
+  } catch (error) {
+    console.error('Error fetching studentID:', error)
+  }
+}
 function showSuccessMessage(message) {
   successMessage.value = message
   setTimeout(() => {
@@ -103,6 +172,29 @@ onMounted(async () => {
     </div>
 
     <div class="flex justify-center items-center"></div>
+    <div>
+      <RouterLink
+        to="/searchCarPlate"
+        class="text-blue-600 hover:underline flex flex-row gap-1"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 512 512"
+        >
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="48"
+            d="M244 400L100 256l144-144M120 256h292"
+          />
+        </svg>
+        Back
+      </RouterLink>
+    </div>
     <div class="flex justify-center items-center mt-10 gap-x-10">
       <div class="w-80 bg-white rounded-lg border border-slate-200 shadow-lg">
         <form class="px-10 py-10 space-y-2">
@@ -137,7 +229,7 @@ onMounted(async () => {
         </form>
       </div>
       <div
-        class="w-3/5 h-[500px] bg-white rounded-lg border border-slate-200 shadow-lg space-y-2 px-10"
+        class="w-4/5 h-[500px] bg-white rounded-lg border border-slate-200 shadow-lg space-y-2 px-10"
       >
         <div class="flex items-center justify-between mt-6">
           <h1 class="text-lg font-semibold">Fines</h1>
@@ -160,8 +252,8 @@ onMounted(async () => {
           </button>
         </div>
 
-        <div class="overflow-y-auto h-[350px]">
-          <table class="table-auto w-full bg-white shadow-md rounded-lg px-4">
+        <div class="overflow-y-auto h-[350px] w-full">
+          <table class="table-auto bg-white shadow-md rounded-lg w-full">
             <thead class="bg-slate-200">
               <tr>
                 <th>Car Plate Number</th>
@@ -170,6 +262,7 @@ onMounted(async () => {
                 <th>Date</th>
                 <th>Time</th>
                 <th>Payment</th>
+                <th>Reciept</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -206,6 +299,16 @@ onMounted(async () => {
                     Pay
                   </button>
                 </td>
+                <td v-if="fine.receipt">
+                  <a
+                    :href="fine.receipt"
+                    target="_blank"
+                    class="text-blue-600 hover:underline"
+                  >
+                    View
+                  </a>
+                </td>
+                <td v-else>No Reciept</td>
                 <td>
                   <button @click="openDeleteModal(fine)" class="text-red-600">
                     Delete
@@ -242,6 +345,8 @@ onMounted(async () => {
     <DeleteFineModal
       :isOpen="openDeleteFineModal"
       :fineId="fineToDelete?.id"
+      :plateNumber="fineToDelete?.plateNumber"
+      :studentId="fineToDelete?.studentId"
       @close="openDeleteFineModal = false"
       @deleted="
         () => {

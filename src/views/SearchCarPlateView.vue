@@ -135,53 +135,47 @@ onMounted(async () => {
         v-model="searchInput"
       />
     </form>
-    <div class="overflow-y-auto max-h-96 max-w-4xl">
-      <!-- Add this wrapper -->
-      <table class="table-auto w-full bg-white px-4">
-        <thead class="bg-slate-500 text-white">
-          <tr>
-            <th class="px-4 py-2">Plate Number</th>
-            <!-- Add padding here -->
-            <th class="px-4 py-2">Student ID</th>
-            <!-- Add padding here -->
-            <th class="px-6 py-2">Contact</th>
-            <!-- Add padding here -->
-            <th class="px-6 py-2">Email</th>
-            <!-- Add padding here -->
-            <th class="px-6 py-2"></th>
-            <!-- Add padding here -->
-          </tr>
-        </thead>
-        <tbody class="text-center bg-white border-2" v-if="filteredData != 0">
-          <tr
-            v-for="(data, index) in filteredData"
-            :key="index"
-            class="hover:bg-slate-200"
-          >
-            <td class="border-b border-gray-300">{{ data.plateNumber }}</td>
-            <td class="border-b border-gray-300" v-if="data.student">
-              {{ data.student.studentID }}
-            </td>
-            <td class="border-b border-gray-300" v-if="data.student">
-              {{ data.student.contact }}
-            </td>
-            <td class="border-b border-gray-300" v-if="data.student">
-              {{ data.student.email }}
-            </td>
-            <td class="border-b border-gray-300 px-2">
-              <button @click="navigateToOwnerDetails(data.plateNumber)">
-                Go
-              </button>
-            </td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="6" class="text-center">No data found</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <table class="table-auto w-full max-w-2xl bg-white px-4">
+      <thead class="bg-slate-500 text-white">
+        <tr>
+          <th class="py-1">Plate Number</th>
+
+          <th class="py-1">Student ID</th>
+          <th class="py-1">Contact</th>
+          <th class="py-1">Email</th>
+          <th class="py-1"></th>
+        </tr>
+      </thead>
+      <tbody class="text-center bg-white border-2" v-if="filteredData != 0">
+        <tr
+          v-for="(data, index) in filteredData"
+          :key="index"
+          class="hover:bg-slate-200"
+        >
+          <td class="border-b border-gray-300">{{ data.plateNumber }}</td>
+
+          <td class="border-b border-gray-300" v-if="data.student">
+            {{ data.student.studentID }}
+          </td>
+          <td class="border-b border-gray-300" v-if="data.student">
+            {{ data.student.contact }}
+          </td>
+          <td class="border-b border-gray-300" v-if="data.student">
+            {{ data.student.email }}
+          </td>
+          <td class="border-b border-gray-300 px-2 text-blue-500">
+            <button @click="navigateToOwnerDetails(data.plateNumber)">
+              View
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tbody v-else>
+        <tr>
+          <td colspan="6" class="text-center">No data found</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 

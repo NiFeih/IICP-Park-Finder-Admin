@@ -14,8 +14,14 @@ import {
   updateDoc,
   Timestamp,
 } from 'firebase/firestore'
-
+import {
+  ref as storageRef,
+  getStorage,
+  uploadBytes,
+  getDownloadURL,
+} from 'firebase/storage'
 const db = getFirestore()
+const storage = getStorage()
 const props = defineProps({
   isOpen: Boolean,
   plateNumber: String,
@@ -37,6 +43,7 @@ const fine = reactive({
     minute: '2-digit',
     second: '2-digit',
   }),
+  receipt: '',
 })
 
 const emit = defineEmits(['close', 'fine-added'])
@@ -59,6 +66,7 @@ async function submitFine() {
 
   try {
     fine.paid = false // Set paid to false
+    console.log(fine)
     const docRef = await addDoc(collection(db, 'Fines'), fine)
     console.log('Fine added to database', docRef.id) // Confirm fine is added
 
@@ -93,28 +101,12 @@ async function submitFine() {
     }
 
     await setDoc(docRef, { id: docRef.id }, { merge: true })
-    closeModal()
     window.location.reload()
+    closeModal()
   } catch (error) {
     console.error('Error adding fine or notification:', error) // Catch any errors
   }
 }
-
-// // Utility function to format the timestamp
-// function formatTimestamp(date) {
-//   const options = {
-//     year: 'numeric',
-//     month: 'long',
-//     day: 'numeric',
-//     hour: 'numeric',
-//     minute: 'numeric',
-//     second: 'numeric',
-//     hour12: true,
-//     timeZone: 'Asia/Singapore', // Adjust to your desired timezone
-//     timeZoneName: 'short', // This will include the UTC+8 format
-//   }
-//   return new Intl.DateTimeFormat('en-US', options).format(date)
-// }
 
 const closeModal = () => {
   emit('close')
